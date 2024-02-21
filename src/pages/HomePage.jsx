@@ -5,7 +5,7 @@ import filter_data from '../data/filter.json'
 import { Modal } from 'react-bootstrap';
 
 function HomePage() {
-    let loaderCount = (Array.from({ length: 3 }, (_, index) => index + 1)); //this is for react-loading-skeleton show noof rows the loder boxes will come
+    let loaderCount = (Array.from({ length: 4 }, (_, index) => index + 1)); //this is for react-loading-skeleton show noof rows the loder boxes will come
     const [foodItems, setFoodItems] = useState([])  // This is for all the food items
     const [filteredFoodItems, setFilteredFoodItems] = useState([])
     const [spinner, showSpinner] = useState(false) //This is loader until the content is come from api and set in to it
@@ -58,6 +58,7 @@ function HomePage() {
         let sortedArray = [];
         if (filteredData?.name) {
             showSpinner(true)
+            // SETTING THE FILTER ACCORDING TO THE CONDITIONS
             if (filteredData?.name === 'Sort By Name') {
                 if (!updateData.some(item => item?.name === 'Sort By Name')) {
                     updateData.push(filteredData);
@@ -68,6 +69,7 @@ function HomePage() {
 
             if (filteredData?.name === 'Filter By Area') {
                 if (!filters?.some(item => item?.name === 'Filter By Area')) {
+                    // area is not there then creating one
                     let temp = [...updateData]
                     temp.push(filteredData)
                     updateData = temp
@@ -78,12 +80,14 @@ function HomePage() {
                     temp[index] = filteredData;
                     updateData = temp
                 } if (filters?.some(item => item?.name === 'Filter By Area') && filters?.some(item => item?.strArea === filteredData?.strArea)) {
+                    // area is there and area_name is also same with selected one then removing 
                     let temp = [...updateData]
                     temp = temp?.filter(item => item?.name !== 'Filter By Area')
                     updateData = temp
                 }
             }
 
+            //CHECKING AND UPDATING THE FILTERED_ITEMS_ARRAY ACCORDING TO THE CONDITIONS
             if (updateData?.some(item => item?.name === 'Filter By Area') && !updateData?.some(item => item?.name === 'Sort By Name')) {
                 const areaFilterItems = await axios.get(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${updateData?.find(item => item?.name === 'Filter By Area')?.strArea}`);
                 areaFilterItems?.data?.meals.forEach(item => {
