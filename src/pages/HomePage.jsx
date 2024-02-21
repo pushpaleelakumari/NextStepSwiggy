@@ -7,6 +7,7 @@ import { Modal } from 'react-bootstrap';
 function HomePage() {
     let loaderCount = (Array.from({ length: 3 }, (_, index) => index + 1)); //this is for react-loading-skeleton show noof rows the loder boxes will come
     const [foodItems, setFoodItems] = useState([])  // This is for all the food items
+    const [filteredFoodItems, setFilteredFoodItems] = useState([])
     const [spinner, showSpinner] = useState(false) //This is loader until the content is come from api and set in to it
     const [modal, showModal] = useState(false)  //For Show model on click on food item
     const [itemDetails, setItemDetails] = useState({}) //on click on food item setting the data in this state
@@ -14,7 +15,7 @@ function HomePage() {
     const [filters, setFilter] = useState([]) //For filters
     const [allContent, setAllContent] = useState(false) // In the model detail section to show the full content and hide the content accordingly
     const [areas, setAreas] = useState([])
-    const [key, setKey] = useState(Math.random())
+    const itemsToMap = (filteredFoodItems?.length === 0 || filters?.length === 0) ? foodItems : filteredFoodItems;
 
     useEffect(() => {
         handleGetfoodItems() //To get the all data
@@ -29,20 +30,6 @@ function HomePage() {
                 item.rating = `${(Math.random() * (5 - 3) + 3).toFixed(1)}`
                 item.time = `${(Math.random() * (50 - 30) + 30).toFixed(0)}`
             });
-            if (filters?.some(item => item?.name === 'Sort By Name')) {
-                const sortedFoods = food?.data?.meals.sort((a, b) => {
-                    const nameA = a.strMeal.toUpperCase(); // Convert names to uppercase for case-insensitive comparison
-                    const nameB = b.strMeal.toUpperCase();
-                    if (nameA < nameB) {
-                        return -1;
-                    }
-                    if (nameA > nameB) {
-                        return 1;
-                    }
-                    return 0;
-                });
-                setFoodItems(sortedFoods)
-            }
             setFoodItems(food?.data?.meals)
             showSpinner(false)
         } catch (err) {
@@ -64,75 +51,74 @@ function HomePage() {
         return <span className='mx-3'>{children}</span>
     }
 
-    const handleApplyFilter = async (filter) => {
-        console.log(filter, 'hello filter')
-        showSpinner(true)
-        if (filter?.name === 'Sort By Name') {
-            if (filters?.some(item => item?.name === filter?.name)) {
-                let updateFilters = filters?.filter(item => item?.name !== filter?.name)
-                setFilter(updateFilters)
-                showSpinner(false)
-            } else if (!filters.some(item => item?.name === filter?.name)) {
-                setFilter([...filters, filter])
-                const sortedFoods = foodItems.sort((a, b) => {
+    const handleApplyFilter = async (filteredData) => {
+        // setFilteredFoodItems
+        let updateData = filters;
+        let sortedArray = [];
+        if (filteredData?.name) {
+            showSpinner(true)
+            if (filteredData?.name === 'Sort By Name') {
+                if (!updateData.some(item => item?.name === 'Sort By Name')) {
+                    updateData.push(filteredData);
+                } else {
+                    updateData = updateData.filter(item => item?.name !== 'Sort By Name');
+                }
+            }
+
+            if (filteredData?.name === 'Sort By Area') {
+                if (!filters?.some(item => item?.name === 'Sort By Area')) {
+                    let temp = [...updateData]
+                    temp.push(filteredData)
+                    updateData = temp
+                } if (filters?.some(item => item?.name === 'Sort By Area') && !filters?.some(item => item?.strArea === filteredData?.strArea)) {
+                    // area is there but not same
+                    let temp = [...updateData]
+                    let index = temp?.findIndex(item => item?.name === 'Sort By Area')
+                    temp[index] = filteredData;
+                    updateData = temp
+                } if (filters?.some(item => item?.name === 'Sort By Area') && filters?.some(item => item?.strArea === filteredData?.strArea)) {
+                    let temp = [...updateData]
+                    temp = temp?.filter(item => item?.name !== 'Sort By Area')
+                    updateData = temp
+                }
+            }
+
+            if (updateData?.some(item => item?.name === 'Sort By Area') && !updateData?.some(item => item?.name === 'Sort By Name')) {
+                const areaFilterItems = await axios.get(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${updateData?.find(item => item?.name === 'Sort By Area')?.strArea}`);
+                areaFilterItems?.data?.meals.forEach(item => {
+                    item.rating = `${(Math.random() * (5 - 3) + 3).toFixed(1)}`;
+                    item.time = `${(Math.random() * (50 - 30) + 30).toFixed(0)}`;
+                });
+                sortedArray = areaFilterItems?.data?.meals;
+            } else if (updateData?.some(item => item?.name === 'Sort By Name') && !updateData?.some(item => item?.name === 'Sort By Area')) {
+                const applySortArray = foodItems.slice().sort((a, b) => {
                     const nameA = a.strMeal.toUpperCase(); // Convert names to uppercase for case-insensitive comparison
                     const nameB = b.strMeal.toUpperCase();
-                    if (nameA < nameB) {
-                        return -1;
-                    }
-                    if (nameA > nameB) {
-                        return 1;
-                    }
-                    return 0;
+                    return nameA.localeCompare(nameB);
                 });
-                setFoodItems(sortedFoods)
-                showSpinner(false)
+                sortedArray = applySortArray;
+            } else if (updateData?.some(item => item?.name === 'Sort By Name') && updateData?.some(item => item?.name === 'Sort By Area')) {
+                const areaFilterItems = await axios.get(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${updateData?.find(item => item?.name === 'Sort By Area')?.strArea}`);
+                areaFilterItems?.data?.meals.forEach(item => {
+                    item.rating = `${(Math.random() * (5 - 3) + 3).toFixed(1)}`;
+                    item.time = `${(Math.random() * (50 - 30) + 30).toFixed(0)}`;
+                });
+                const applySortArray = areaFilterItems?.data?.meals.slice().sort((a, b) => {
+                    const nameA = a.strMeal.toUpperCase(); // Convert names to uppercase for case-insensitive comparison
+                    const nameB = b.strMeal.toUpperCase();
+                    return nameA.localeCompare(nameB);
+                });
+                sortedArray = applySortArray;
+            } else {
+                handleGetfoodItems()
             }
+
         }
-        if (filter?.name === 'Sort By Area' || (filter?.name !== 'Sort By Area' && filters?.some(item => item?.name === 'Sort By Area'))) {
-            // Check if the filter is not already in the array
-            if (!filters?.some(item => item?.name === 'Sort By Area')) {
-                setFilter([...filters, filter]);
-            }
-            // Check if the filter's area is not already in the array
-            if (!filters?.some(item => item?.strArea === filter?.strArea)) {
-                try {
-                    // Fetch data based on the filter's area
-                    const areaSort = await axios.get(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${filter?.strArea || filters?.find(item => item?.name === 'Sort By Area')?.strArea}`);
-                    if (filters?.some(item => item?.name === 'Sort By Name')) {
-                        console.log('hello name filter exist')
-                        areaSort?.data?.meals.sort((a, b) => {
-                            const nameA = a.strMeal.toUpperCase(); // Convert names to uppercase for case-insensitive comparison
-                            const nameB = b.strMeal.toUpperCase();
-                            if (nameA < nameB) {
-                                return -1;
-                            }
-                            if (nameA > nameB) {
-                                return 1;
-                            }
-                            return 0;
-                        });
-                    }
-                    areaSort?.data?.meals.forEach(item => {
-                        item.rating = `${(Math.random() * (5 - 3) + 3).toFixed(1)}`
-                        item.time = `${(Math.random() * (50 - 30) + 30).toFixed(0)}`
-                    });
-                    setFoodItems(areaSort?.data?.meals);
-                    showSpinner(false)
-                } catch (error) {
-                    console.error('Error fetching area sort data:', error);
-                    showSpinner(false)
-                }
-                const updatedFilters = [...filters.filter(item => item?.name !== filter?.name), filter];
-                setFilter(updatedFilters);
-                showSpinner(false)
-            } else if (filters?.some(item => item?.strArea === filter?.strArea)) {
-                const updatedFilters = filters.filter(item => item?.strArea !== filter?.strArea);
-                setFilter(updatedFilters);
-                showSpinner(false)
-            }
-        }
+        setFilteredFoodItems(sortedArray);
+        setFilter(updateData);
+        showSpinner(false)
     };
+
 
     const handleShowModal = async (data) => {
         showModal(true)
@@ -244,9 +230,9 @@ function HomePage() {
                             </div>
 
                         </div>
-                        <div className="row" key={key}>
+                        <div className="row">
                             {
-                                foodItems?.map((data, index) => (
+                                itemsToMap?.map((data, index) => (
                                     <div className="col-lg-3 col-md-6 mt-3" onClick={() => handleShowModal(data)} key={index}>
                                         <div className="card p-0 m-0 card-body card-hover card-shadow">
                                             <img
