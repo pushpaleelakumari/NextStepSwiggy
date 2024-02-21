@@ -1,0 +1,9 @@
+[
+    {
+        "name": "Sort By Area",
+        "dropdown": true
+    },
+    {
+        "name": "Sort By Name"
+    }
+]
