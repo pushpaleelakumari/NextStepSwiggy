@@ -15,11 +15,12 @@ function HomePage() {
     const [filters, setFilter] = useState([]) //For filters
     const [allContent, setAllContent] = useState(false) // In the model detail section to show the full content and hide the content accordingly
     const [areas, setAreas] = useState([])
+    const [key, setKey] = useState(Math.random()) //to render the some jsx properly
     const itemsToMap = (filteredFoodItems?.length === 0 || filters?.length === 0) ? foodItems : filteredFoodItems;
 
     useEffect(() => {
         handleGetfoodItems() //To get the all data
-        handleGetArea()
+        handleGetArea() //To get all the areas from API to show the filter by area dropdown
     }, [])
 
     const handleGetfoodItems = async () => {
@@ -52,7 +53,7 @@ function HomePage() {
     }
 
     const handleApplyFilter = async (filteredData) => {
-        // setFilteredFoodItems
+        setKey(Math.random())
         let updateData = filters;
         let sortedArray = [];
         if (filteredData?.name) {
@@ -65,48 +66,48 @@ function HomePage() {
                 }
             }
 
-            if (filteredData?.name === 'Sort By Area') {
-                if (!filters?.some(item => item?.name === 'Sort By Area')) {
+            if (filteredData?.name === 'Filter By Area') {
+                if (!filters?.some(item => item?.name === 'Filter By Area')) {
                     let temp = [...updateData]
                     temp.push(filteredData)
                     updateData = temp
-                } if (filters?.some(item => item?.name === 'Sort By Area') && !filters?.some(item => item?.strArea === filteredData?.strArea)) {
+                } if (filters?.some(item => item?.name === 'Filter By Area') && !filters?.some(item => item?.strArea === filteredData?.strArea)) {
                     // area is there but not same
                     let temp = [...updateData]
-                    let index = temp?.findIndex(item => item?.name === 'Sort By Area')
+                    let index = temp?.findIndex(item => item?.name === 'Filter By Area')
                     temp[index] = filteredData;
                     updateData = temp
-                } if (filters?.some(item => item?.name === 'Sort By Area') && filters?.some(item => item?.strArea === filteredData?.strArea)) {
+                } if (filters?.some(item => item?.name === 'Filter By Area') && filters?.some(item => item?.strArea === filteredData?.strArea)) {
                     let temp = [...updateData]
-                    temp = temp?.filter(item => item?.name !== 'Sort By Area')
+                    temp = temp?.filter(item => item?.name !== 'Filter By Area')
                     updateData = temp
                 }
             }
 
-            if (updateData?.some(item => item?.name === 'Sort By Area') && !updateData?.some(item => item?.name === 'Sort By Name')) {
-                const areaFilterItems = await axios.get(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${updateData?.find(item => item?.name === 'Sort By Area')?.strArea}`);
+            if (updateData?.some(item => item?.name === 'Filter By Area') && !updateData?.some(item => item?.name === 'Sort By Name')) {
+                const areaFilterItems = await axios.get(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${updateData?.find(item => item?.name === 'Filter By Area')?.strArea}`);
                 areaFilterItems?.data?.meals.forEach(item => {
                     item.rating = `${(Math.random() * (5 - 3) + 3).toFixed(1)}`;
                     item.time = `${(Math.random() * (50 - 30) + 30).toFixed(0)}`;
                 });
                 sortedArray = areaFilterItems?.data?.meals;
-            } else if (updateData?.some(item => item?.name === 'Sort By Name') && !updateData?.some(item => item?.name === 'Sort By Area')) {
+            } else if (updateData?.some(item => item?.name === 'Sort By Name') && !updateData?.some(item => item?.name === 'Filter By Area')) {
                 const applySortArray = foodItems.slice().sort((a, b) => {
-                    const nameA = a.strMeal.toUpperCase(); // Convert names to uppercase for case-insensitive comparison
-                    const nameB = b.strMeal.toUpperCase();
+                    const nameA = a.strMeal.toUpperCase().replace(/&/g, '');
+                    const nameB = b.strMeal.toUpperCase().replace(/&/g, '');
                     return nameA.localeCompare(nameB);
                 });
                 sortedArray = applySortArray;
-            } else if (updateData?.some(item => item?.name === 'Sort By Name') && updateData?.some(item => item?.name === 'Sort By Area')) {
-                const areaFilterItems = await axios.get(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${updateData?.find(item => item?.name === 'Sort By Area')?.strArea}`);
+            } else if (updateData?.some(item => item?.name === 'Sort By Name') && updateData?.some(item => item?.name === 'Filter By Area')) {
+                const areaFilterItems = await axios.get(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${updateData?.find(item => item?.name === 'Filter By Area')?.strArea}`);
                 areaFilterItems?.data?.meals.forEach(item => {
                     item.rating = `${(Math.random() * (5 - 3) + 3).toFixed(1)}`;
                     item.time = `${(Math.random() * (50 - 30) + 30).toFixed(0)}`;
                 });
                 const applySortArray = areaFilterItems?.data?.meals.slice().sort((a, b) => {
-                    const nameA = a.strMeal.toUpperCase(); // Convert names to uppercase for case-insensitive comparison
-                    const nameB = b.strMeal.toUpperCase();
-                    return nameA.localeCompare(nameB);
+                    const nameA = a.strMeal.toUpperCase().replace(/&/g, '');
+                    const nameB = b.strMeal.toUpperCase().replace(/&/g, '');
+                    return nameA.localeCompare(nameB); // checks if nameA > nameB
                 });
                 sortedArray = applySortArray;
             } else {
@@ -169,7 +170,7 @@ function HomePage() {
                     </div>
                     :
                     <section className=' mt-7'>
-                        <div>
+                        <div key={key}>
                             <h1>Restaurants with online food delivery</h1>
                             <div className='d-flex flex-wrap gap-2 justify-content-start'>
                                 <div className='dropdown'>
@@ -206,8 +207,8 @@ function HomePage() {
                                         >
                                             <span>
                                                 {
-                                                    data?.name === 'Sort By Area' ?
-                                                        <>{filters?.some(item => item?.name === 'Sort By Area') ? filters?.find(item => item?.name === 'Sort By Area')?.strArea : 'Sort By Area'}</> :
+                                                    data?.name === 'Filter By Area' ?
+                                                        <>{filters?.some(item => item?.name === 'Filter By Area') ? filters?.find(item => item?.name === 'Filter By Area')?.strArea : 'Filter By Area'}</> :
                                                         <>
                                                             {data?.name + ' '}
                                                             {filters.some(item => item?.name === data?.name) && <b>X</b>}
@@ -220,7 +221,7 @@ function HomePage() {
                                             <div className="dropdown-menu p-0 pt-3 pb-3">
                                                 {areas?.map((item, index) => (
                                                     <div className="dropdown-column" key={index}>
-                                                        <span className='ps-3 mt-4 cursor-pointer' onClick={() => handleApplyFilter({ ...item, "name": "Sort By Area" })}>{item?.strArea}</span>
+                                                        <span className='ps-3 mt-4 cursor-pointer' onClick={() => handleApplyFilter({ ...item, "name": "Filter By Area" })}>{item?.strArea}</span>
                                                     </div>
                                                 ))}
                                             </div>
