@@ -12,3 +12,9 @@ npm run start
 
 ### Deployment
 * Deployment using Netlify
+
+### Tools & Technology Used
+* Used react-loading-skeleton for loading the page, for good looking UI while loading
+* Used react-bootstrap For Modal & Bootstrap CSS to reduce the time for buildingthe project
+* Axios for calling API's
+* react-router-dom for routing purpose

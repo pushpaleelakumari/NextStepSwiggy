@@ -144,6 +144,7 @@ function HomePage() {
         <section className='my-5 container'>
             {
                 spinner ?
+                    // for Loader
                     <div className='mt-7'>
                         <SkeletonTheme>
                             <Skeleton count={1}
@@ -173,9 +174,11 @@ function HomePage() {
                         )}
                     </div>
                     :
+                    // Main UI
                     <section className=' mt-7'>
                         <div key={key}>
                             <h1>Restaurants with online food delivery</h1>
+                            {/* FILTER SECTION */}
                             <div className='d-flex flex-wrap gap-2 justify-content-start'>
                                 <div className='dropdown'>
                                     <button className={`btn cursor-pointer p-2 filter-shadow filter-border border px-3`} type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
@@ -238,6 +241,7 @@ function HomePage() {
                         <div className="row">
                             {
                                 itemsToMap?.map((data, index) => (
+                                    // Food Items Section (Data Grid):
                                     <div className="col-lg-3 col-md-6 mt-3" onClick={() => handleShowModal(data)} key={index}>
                                         <div className="card p-0 m-0 card-body card-hover card-shadow">
                                             <img
