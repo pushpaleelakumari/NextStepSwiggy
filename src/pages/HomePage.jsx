@@ -1,11 +1,12 @@
-import axios from 'axios'
-import React, { useEffect, useState } from 'react'
-import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
-import filter_data from '../data/filter.json'
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { Modal } from 'react-bootstrap';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import filter_data from '../data/filter.json';
+import PaginationComponent from '../layout/PaginationComponent';
 
 function HomePage() {
-    let loaderCount = (Array.from({ length: 4 }, (_, index) => index + 1)); //this is for react-loading-skeleton show noof rows the loder boxes will come
+    let loaderCount = (Array.from({ length: 3 }, (_, index) => index + 1)); //this is for react-loading-skeleton show noof rows the loder boxes will come
     const [foodItems, setFoodItems] = useState([])  // This is for all the food items
     const [filteredFoodItems, setFilteredFoodItems] = useState([])
     const [spinner, showSpinner] = useState(false) //This is loader until the content is come from api and set in to it
@@ -13,10 +14,16 @@ function HomePage() {
     const [itemDetails, setItemDetails] = useState({}) //on click on food item setting the data in this state
     const [modalSpinner, showModalSpinner] = useState(false) //After click on food Item for that particuler food calling API until the data comes need to show spinner in the Model
     const [filters, setFilter] = useState([]) //For filters
-    const [allContent, setAllContent] = useState(false) // In the model detail section to show the full content and hide the content accordingly
-    const [areas, setAreas] = useState([])
+    const [allContent, showAllContent] = useState(false) // In the model detail section to show the full content and hide the content accordingly
+    const [areas, setAreas] = useState([]) // List of areas to filter
     const [key, setKey] = useState(Math.random()) //to render the some jsx properly
-    const itemsToMap = (filteredFoodItems?.length === 0 || filters?.length === 0) ? foodItems : filteredFoodItems;
+
+    // PAGINATION ELEMENTS
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 12;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    let itemsToMap = (filteredFoodItems?.length === 0 || filters?.length === 0) ? foodItems : filteredFoodItems;
+    const endIndex = Math.min(startIndex + itemsPerPage, itemsToMap.length);  //for some areas items length < itemsPerPage
 
     useEffect(() => {
         handleGetfoodItems() //To get the all data
@@ -34,7 +41,7 @@ function HomePage() {
             setFoodItems(food?.data?.meals)
             showSpinner(false)
         } catch (err) {
-            console.log(err, 'hello error')
+            console.log(err)
             showSpinner(false);
         }
     }
@@ -48,7 +55,7 @@ function HomePage() {
         }
     }
 
-    function InlineWrapperWithMargin({ children }) {
+    const InlineWrapperWithMargin = ({ children }) => {
         return <span className='mx-3'>{children}</span>
     }
 
@@ -105,8 +112,8 @@ function HomePage() {
             } else if (updateData?.some(item => item?.name === 'Sort By Name') && updateData?.some(item => item?.name === 'Filter By Area')) {
                 const areaFilterItems = await axios.get(`https://www.themealdb.com/api/json/v1/1/filter.php?a=${updateData?.find(item => item?.name === 'Filter By Area')?.strArea}`);
                 areaFilterItems?.data?.meals.forEach(item => {
-                    item.rating = `${(Math.random() * (5 - 3) + 3).toFixed(1)}`;
-                    item.time = `${(Math.random() * (50 - 30) + 30).toFixed(0)}`;
+                    item.rating = `${(Math.random() * (5 - 3) + 3).toFixed(1)}`;  // Adding random ratings to the response
+                    item.time = `${(Math.random() * (50 - 30) + 30).toFixed(0)}`; // Adding random time to the response
                 });
                 const applySortArray = areaFilterItems?.data?.meals.slice().sort((a, b) => {
                     const nameA = a.strMeal.toUpperCase().replace(/&/g, '');
@@ -130,9 +137,8 @@ function HomePage() {
         showModalSpinner(true)
         try {
             setItemDetails([])
-            const response = await axios.get(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${data?.idMeal}`)
+            const response = await axios.get(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${data?.idMeal}`)  // Item details API
             setItemDetails(response?.data?.meals[0])
-            console.log(response?.data?.meals[0], 'hello response')
             showModalSpinner(false)
         } catch (err) {
             console.log(err)
@@ -140,12 +146,18 @@ function HomePage() {
         }
     }
 
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
     return (
         <section className='my-5 container'>
             {
                 spinner ?
                     // for Loader
                     <div className='mt-7'>
+                        {/* Since it's small project I am adding the loader element in same file or else
+                            We could create another component and can use in multiple times in multiple components */}
                         <SkeletonTheme>
                             <Skeleton count={1}
                                 wrapper={InlineWrapperWithMargin}
@@ -184,26 +196,25 @@ function HomePage() {
                                     <button className={`btn cursor-pointer p-2 filter-shadow filter-border border px-3`} type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                         {filters?.length > 0 && <span className='px-2 border rounded-circle bg-success'>{filters?.length}</span>} Filter <i className='fe fe-filter' />
                                     </button>
-                                    <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <ul className="dropdown-menu p-0 m-0" aria-labelledby="dropdownMenuButton">
                                         {filters?.length > 0 ?
                                             <>
                                                 {filters.map((filter, index) => (
-                                                    <li key={index} className="dropdown-item">
-                                                        <span className='ps-3 mt-4 cursor-pointer'>{filter.name}</span>
+                                                    <li key={index} className="dropdown-item py-1 ps-2 m-0">
+                                                        <span className='cursor-pointer'>{filter.name}</span>
                                                     </li>
                                                 ))}
-                                                <hr />
-                                                <li className="dropdown-item">
-                                                    <span className='ps-3 cursor-pointer' onClick={() => { setFilter([]); handleGetfoodItems() }}>Clear Filters</span>
+                                                <hr className='mt-1 mb-0' />
+                                                <li className="dropdown-item ps-2">
+                                                    <span className='cursor-pointer' onClick={() => { setFilter([]); handleGetfoodItems() }}>Clear Filters</span>
                                                 </li>
                                             </>
                                             :
-                                            <li className="dropdown-item">
-                                                <span className='ps-3 mt-4 cursor-pointer'>No Filters</span>
+                                            <li className="dropdown-item ps-3">
+                                                <span className='cursor-pointer text-dark'>No Filters</span>
                                             </li>}
                                     </ul>
                                 </div>
-
 
                                 {filter_data?.map((data, index) => (
                                     <div className="dropdown" key={index}>
@@ -236,14 +247,13 @@ function HomePage() {
                                     </div>
                                 ))}
                             </div>
-
                         </div>
                         <div className="row">
                             {
-                                itemsToMap?.map((data, index) => (
+                                itemsToMap?.slice(startIndex, endIndex)?.map((data, index) => (
                                     // Food Items Section (Data Grid):
                                     <div className="col-lg-3 col-md-6 mt-3" onClick={() => handleShowModal(data)} key={index}>
-                                        <div className="card p-0 m-0 card-body card-hover card-shadow">
+                                        <div className="card p-0 m-0 card-body card-shadow">
                                             <img
                                                 src={data?.strMealThumb}
                                                 className="rounded cursor-pointer"
@@ -274,6 +284,12 @@ function HomePage() {
                                 ))
                             }
                         </div>
+                        {/* PAGINATION */}
+                        <PaginationComponent
+                            itemsPerPage={itemsPerPage}
+                            totalItems={itemsToMap.length}
+                            onPageChange={handlePageChange}
+                        />
                     </section>
             }
             <Modal show={modal} onHide={() => showModal(false)}>
@@ -284,6 +300,8 @@ function HomePage() {
                     {modalSpinner ?
                         <div className=''>
                             <div className='my-4 row'>
+                                {/* Since it's small project I am adding the loader element in same file or else
+                                    We could create another component and can use in multiple times in multiple components */}
                                 <SkeletonTheme>
                                     <Skeleton count={1}
                                         wrapper={InlineWrapperWithMargin}
@@ -324,7 +342,7 @@ function HomePage() {
                                                 itemDetails?.strInstructions?.length > 200 ?
                                                     <>
                                                         {allContent ? itemDetails?.strInstructions + ' ' : `${itemDetails?.strInstructions.slice(0, 200)}... `}
-                                                        <u onClick={() => setAllContent(!allContent)} className='cursor-pointer text-primary'>
+                                                        <u onClick={() => showAllContent(!allContent)} className='cursor-pointer text-primary'>
                                                             {allContent ? 'Hide' : 'Read more'}
                                                         </u>
                                                     </>
@@ -332,7 +350,6 @@ function HomePage() {
                                                     itemDetails?.strInstructions
                                             }
                                         </p>
-
                                     </div>
                                 </div>
                             )}
