@@ -1,4 +1,3 @@
-import React from 'react'
 import HeaderSvg from './HeaderSvg'
 
 function Header() {
@@ -34,15 +33,11 @@ function Header() {
               </ul>
             </div>
           </div>
-          <button
-            type="button"
-            className="navbar-toggler"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
+          {/* BUttom for Responsiveness */}
+          <button type="button" className="navbar-toggler"
+            data-bs-toggle="offcanvas" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false"
+            aria-label="Toggle navigation">
             <b>
               <i className='fe fe-list'></i>
             </b>
