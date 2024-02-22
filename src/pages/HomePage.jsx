@@ -146,6 +146,8 @@ function HomePage() {
                 spinner ?
                     // for Loader
                     <div className='mt-7'>
+                        {/* Since it's small project I am adding the loader element in same file or else
+                            We could create another component and can use in multiple times in multiple components */}
                         <SkeletonTheme>
                             <Skeleton count={1}
                                 wrapper={InlineWrapperWithMargin}
@@ -184,22 +186,22 @@ function HomePage() {
                                     <button className={`btn cursor-pointer p-2 filter-shadow filter-border border px-3`} type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                                         {filters?.length > 0 && <span className='px-2 border rounded-circle bg-success'>{filters?.length}</span>} Filter <i className='fe fe-filter' />
                                     </button>
-                                    <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <ul className="dropdown-menu p-0 m-0" aria-labelledby="dropdownMenuButton">
                                         {filters?.length > 0 ?
                                             <>
                                                 {filters.map((filter, index) => (
-                                                    <li key={index} className="dropdown-item">
-                                                        <span className='ps-3 mt-4 cursor-pointer'>{filter.name}</span>
+                                                    <li key={index} className="dropdown-item py-1 ps-2 m-0">
+                                                        <span className='cursor-pointer'>{filter.name}</span>
                                                     </li>
                                                 ))}
-                                                <hr />
-                                                <li className="dropdown-item">
-                                                    <span className='ps-3 cursor-pointer' onClick={() => { setFilter([]); handleGetfoodItems() }}>Clear Filters</span>
+                                                <hr className='mt-1 mb-0' />
+                                                <li className="dropdown-item ps-2">
+                                                    <span className='cursor-pointer' onClick={() => { setFilter([]); handleGetfoodItems() }}>Clear Filters</span>
                                                 </li>
                                             </>
                                             :
-                                            <li className="dropdown-item">
-                                                <span className='ps-3 mt-4 cursor-pointer'>No Filters</span>
+                                            <li className="dropdown-item ps-3">
+                                                <span className='cursor-pointer text-dark'>No Filters</span>
                                             </li>}
                                     </ul>
                                 </div>
@@ -243,7 +245,7 @@ function HomePage() {
                                 itemsToMap?.map((data, index) => (
                                     // Food Items Section (Data Grid):
                                     <div className="col-lg-3 col-md-6 mt-3" onClick={() => handleShowModal(data)} key={index}>
-                                        <div className="card p-0 m-0 card-body card-hover card-shadow">
+                                        <div className="card p-0 m-0 card-body card-shadow">
                                             <img
                                                 src={data?.strMealThumb}
                                                 className="rounded cursor-pointer"
@@ -284,6 +286,8 @@ function HomePage() {
                     {modalSpinner ?
                         <div className=''>
                             <div className='my-4 row'>
+                                {/* Since it's small project I am adding the loader element in same file or else
+                                    We could create another component and can use in multiple times in multiple components */}
                                 <SkeletonTheme>
                                     <Skeleton count={1}
                                         wrapper={InlineWrapperWithMargin}
@@ -332,7 +336,6 @@ function HomePage() {
                                                     itemDetails?.strInstructions
                                             }
                                         </p>
-
                                     </div>
                                 </div>
                             )}
