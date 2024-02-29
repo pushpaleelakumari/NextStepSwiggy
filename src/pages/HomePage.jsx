@@ -22,9 +22,9 @@ function HomePage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
     let startIndex
-    startIndex = startIndex ? (startIndex < endIndex ? (currentPage - 1) * itemsPerPage : 0) : (currentPage - 1) * itemsPerPage;
     let itemsToMap = (filteredFoodItems?.length === 0 || filters?.length === 0) ? foodItems : filteredFoodItems;
     const endIndex = Math.min(startIndex + itemsPerPage, itemsToMap.length);  //for some areas items length < itemsPerPage
+    startIndex = startIndex ? (startIndex < endIndex ? (currentPage - 1) * itemsPerPage : 0) : (currentPage - 1) * itemsPerPage;
 
     useEffect(() => {
         handleGetfoodItems() //To get the all data
