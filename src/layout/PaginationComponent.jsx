@@ -4,8 +4,6 @@ const PaginationComponent = ({ itemsPerPage, totalItems, onPageChange }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-    console.log(totalPages)
-
     const handlePrevClick = () => {
         if (currentPage > 1) {
             setCurrentPage(currentPage - 1);
