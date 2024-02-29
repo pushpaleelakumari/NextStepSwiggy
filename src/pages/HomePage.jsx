@@ -21,7 +21,6 @@ function HomePage() {
     // PAGINATION ELEMENTS
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
-    // let startIndex = (currentPage - 1) * itemsPerPage;
     const [startIndex, setStartIndex] = useState(0)
     let itemsToMap = (filteredFoodItems?.length === 0 || filters?.length === 0) ? foodItems : filteredFoodItems;
     const endIndex = Math.min(startIndex + itemsPerPage, itemsToMap.length);  //for some areas items length < itemsPerPage
