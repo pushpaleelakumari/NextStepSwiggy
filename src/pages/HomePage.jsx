@@ -21,7 +21,7 @@ function HomePage() {
     // PAGINATION ELEMENTS
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
-    const startIndex = (currentPage - 1) * itemsPerPage;
+    const [startIndex, setStartIndex] = useState(0)
     let itemsToMap = (filteredFoodItems?.length === 0 || filters?.length === 0) ? foodItems : filteredFoodItems;
     const endIndex = Math.min(startIndex + itemsPerPage, itemsToMap.length);  //for some areas items length < itemsPerPage
 
@@ -29,6 +29,16 @@ function HomePage() {
         handleGetfoodItems() //To get the all data
         handleGetArea() //To get all the areas from API to show the filter by area dropdown
     }, [])
+
+    useEffect(() => {
+        setStartIndex((currentPage - 1) * itemsPerPage);
+    }, [currentPage, filteredFoodItems, itemsPerPage]);
+
+    useEffect(() => {
+        if (startIndex >= endIndex) {
+            setStartIndex(Math.max(0, endIndex - itemsPerPage));
+        }
+    }, [startIndex, endIndex]);
 
     const handleGetfoodItems = async () => {
         showSpinner(true)
