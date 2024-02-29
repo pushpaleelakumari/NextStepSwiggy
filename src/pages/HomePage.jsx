@@ -21,10 +21,9 @@ function HomePage() {
     // PAGINATION ELEMENTS
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 12;
-    let startIndex
+    const startIndex = (currentPage - 1) * itemsPerPage;
     let itemsToMap = (filteredFoodItems?.length === 0 || filters?.length === 0) ? foodItems : filteredFoodItems;
     const endIndex = Math.min(startIndex + itemsPerPage, itemsToMap.length);  //for some areas items length < itemsPerPage
-    startIndex = startIndex ? (startIndex < endIndex ? (currentPage - 1) * itemsPerPage : 0) : (currentPage - 1) * itemsPerPage;
 
     useEffect(() => {
         handleGetfoodItems() //To get the all data
@@ -126,6 +125,9 @@ function HomePage() {
                 handleGetfoodItems()
             }
 
+        }
+        if (startIndex >= endIndex) {
+            startIndex = 0
         }
         setFilteredFoodItems(sortedArray);
         setFilter(updateData);
@@ -251,9 +253,7 @@ function HomePage() {
                         </div>
                         <div className="row">
                             {
-                                itemsToMap?.slice(startIndex > endIndex ? 0 : startIndex, endIndex)?.map((data, index) =>
-
-                                (
+                                itemsToMap?.slice(startIndex, endIndex)?.map((data, index) => (
                                     // Food Items Section (Data Grid):
                                     <div className="col-lg-3 col-md-6 mt-3" onClick={() => handleShowModal(data)} key={index}>
                                         <div className="card p-0 m-0 card-body card-shadow">
@@ -284,8 +284,7 @@ function HomePage() {
                                         </div>
                                     </div>
 
-                                )
-                                )
+                                ))
                             }
                         </div>
                         {/* PAGINATION */}
